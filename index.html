@@ -101,6 +101,91 @@
         @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
+
+<!---firebase configuration-->
+
+<script type="module">
+  // Firebase configuration
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAH7U0TJ-w2ggNcFhEHny2o_bft99b5BLQ",
+    authDomain: "mkuzo-islamic-secondary-school.firebaseapp.com",
+    projectId: "mkuzo-islamic-secondary-school",
+    storageBucket: "mkuzo-islamic-secondary-school.firebasestorage.app",
+    messagingSenderId: "9817235875",
+    appId: "1:9817235875:web:9dd285dff805b48c493a16",
+    measurementId: "G-2HSYPT1TZY"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 🧾 Save student form
+  const form = document.getElementById('admissionForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const data = {
+        timestamp: new Date().toISOString(),
+        student: {
+          firstName: f.get('firstName'),
+          middleName: f.get('middleName'),
+          lastName: f.get('lastName'),
+          gender: f.get('gender'),
+          dob: f.get('dob'),
+          address: f.get('studentAddress')
+        },
+        parent: {
+          name: f.get('parentName'),
+          phone: f.get('parentPhone'),
+          address: f.get('parentAddress')
+        },
+        academic: {
+          classroom: f.get('classroom'),
+          academicYear: f.get('academicYear'),
+          previousSchool: f.get('previousSchool'),
+          notes: f.get('notes')
+        }
+      };
+      await addDoc(collection(db, "admissions"), data);
+      alert("✅ Submitted successfully!");
+      form.reset();
+    });
+  }
+
+  // 📋 Load data for admin
+  const tableContainer = document.getElementById('admissionsTable');
+  if (tableContainer) {
+    async function loadAdmissions() {
+      const querySnapshot = await getDocs(collection(db, "admissions"));
+      let html = `
+        <table>
+          <thead><tr>
+            <th>Student Name</th><th>Gender</th><th>Parent</th><th>Phone</th><th>Class</th><th>Year</th>
+          </tr></thead><tbody>`;
+      querySnapshot.forEach((docSnap) => {
+        const a = docSnap.data();
+        html += `<tr>
+          <td>${a.student.firstName} ${a.student.lastName}</td>
+          <td>${a.student.gender}</td>
+          <td>${a.parent.name}</td>
+          <td>${a.parent.phone}</td>
+          <td>${a.academic.classroom}</td>
+          <td>${a.academic.academicYear}</td>
+        </tr>`;
+      });
+      html += "</tbody></table>";
+      tableContainer.innerHTML = html;
+    }
+    loadAdmissions();
+  }
+</script>
+
+<!---firebase configuration-->
+
 <body>
     <div class="container">
         <div class="header">
